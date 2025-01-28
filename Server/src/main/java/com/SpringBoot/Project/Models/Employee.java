@@ -1,6 +1,7 @@
 package com.SpringBoot.Project.Models;
-
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
+
 import java.util.Objects;
 
 @Entity
@@ -10,9 +11,13 @@ public class Employee {
     @GeneratedValue(strategy = GenerationType.IDENTITY) //Is used to automatically generate unique values for the primary key column in the database.
     private long employeeId;
 
+    @NotNull(message = "Name cannot be null")
     @Column(nullable = false)
     private String name;
 
+    //@NotNull is used for application level, whereas @Column is used for database level. Both ensure data integrity.
+    @NotNull(message = "Email cannot be null")
+    @Email(message = "Email must be a valid format")
     @Column(nullable = false, unique = true)
     private String email;
 
@@ -21,6 +26,7 @@ public class Employee {
     @JoinColumn(name = "department_id", nullable = false) //Joins at the specific foreign key column name.
     private Department department;
 
+    @NotNull(message = "Role cannot be null")
     @Column(nullable = false)
     private String role;
 
@@ -28,20 +34,11 @@ public class Employee {
         //Default constructor for JPA
     }
 
-    public Employee(long employeeId, String name, String email, Department department, String role){
-        this.employeeId = employeeId;
+    public Employee(String name, String email, Department department, String role){
         this.name = name;
         this.email = email;
         this.department = department;
         this.role = role;
-    }
-
-    public long getEmployeeId() {
-        return employeeId;
-    }
-
-    public void setEmployeeId(long employeeId) {
-        this.employeeId = employeeId;
     }
 
     public String getName() {

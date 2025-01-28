@@ -1,6 +1,7 @@
 package com.SpringBoot.Project.Models;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 
 @Entity
 public class Department {
@@ -9,6 +10,7 @@ public class Department {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long departmentId;
 
+    @NotNull(message = "Name cannot be Null")
     @Column(nullable = false, unique = true)
     private String name;
 
@@ -19,18 +21,9 @@ public class Department {
         //Default constructor for JPA
     }
 
-    public Department(Long departmentId, String name, String description){
-        this.departmentId = departmentId;
+    public Department(String name, String description){
         this.name = name;
         this.description = description;
-    }
-
-    public long getDepartmentId() {
-        return departmentId;
-    }
-
-    public void setDepartmentId(long departmentId) {
-        this.departmentId = departmentId;
     }
 
     public String getName() {

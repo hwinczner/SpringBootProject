@@ -1,6 +1,8 @@
 package com.SpringBoot.Project.Models;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
+
 import java.time.LocalDate;
 
 @Entity
@@ -14,17 +16,21 @@ public class LeaveRequest {
     @JoinColumn(name = "employee_id", nullable = false)
     private Employee employee;
 
+    @NotNull(message = "Start date cannot be null")
     @Column(nullable = false)
     private LocalDate startDate;
 
+    @NotNull(message = "End date cannot be null")
     @Column(nullable = false)
     private LocalDate endDate;
 
     //Using enum for status of leave request.
+    @NotNull(message = "Status cannot be null")
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Status status;
 
+    @NotNull(message = "Reason cannot be null")
     @Column(nullable = false)
     private String reason;
 
@@ -35,22 +41,13 @@ public class LeaveRequest {
         //Default constructor for JPA
     }
 
-    public LeaveRequest(long id, Employee employee, LocalDate startDate, LocalDate endDate, Status status, String reason, String managerComment){
-        this.id = id;
+    public LeaveRequest(Employee employee, LocalDate startDate, LocalDate endDate, Status status, String reason, String managerComment){
         this.employee = employee;
         this.startDate = startDate;
         this.endDate = endDate;
         this.status = status;
         this.reason = reason;
         this.managerComment = managerComment;
-    }
-
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
     }
 
     public Employee getEmployee() {
