@@ -8,7 +8,8 @@ import java.util.Objects;
 public class Employee {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) //Is used to automatically generate unique values for the primary key column in the database.
+    @GeneratedValue(strategy = GenerationType.IDENTITY) //Is used to automatically generate unique values
+    // for the primary key column in the database. So employeeId does not need to be initialized in constructor.
     private long employeeId;
 
     @NotNull(message = "Name cannot be null")
