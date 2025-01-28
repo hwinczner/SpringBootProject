@@ -7,7 +7,7 @@ import java.util.Objects;
 public class Employee {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY) //Is used to automatically generate unique values for the primary key column in the database.
     private long employeeId;
 
     @Column(nullable = false)
@@ -16,8 +16,9 @@ public class Employee {
     @Column(nullable = false, unique = true)
     private String email;
 
+    //Used for establishing a relationship between 2 tables, joins many rows into one row.
     @ManyToOne
-    @JoinColumn(name = "department_id", nullable = false)
+    @JoinColumn(name = "department_id", nullable = false) //Joins at the specific foreign key column name.
     private Department department;
 
     @Column(nullable = false)
