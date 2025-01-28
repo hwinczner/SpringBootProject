@@ -5,6 +5,7 @@ import java.util.Objects;
 
 @Entity
 public class Employee {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long employeeId;
@@ -22,7 +23,7 @@ public class Employee {
     @Column(nullable = false)
     private String role;
 
-    Employee(){
+    public Employee(){
         //Default constructor for JPA
     }
 
@@ -74,6 +75,8 @@ public class Employee {
         this.role = role;
     }
 
+
+    //Overriding .equals() as to just compare employeeId and email, ignoring other variables to more logically compare employees.
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

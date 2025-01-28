@@ -12,11 +12,11 @@ public class Department {
     @Column(nullable = false, unique = true)
     private String name;
 
-    @Column(nullable = true)
+    @Column
     private String description;
 
-    Department() {
-
+    public Department() {
+        //Default constructor for JPA
     }
 
     public Department(Long departmentId, String name, String description){
