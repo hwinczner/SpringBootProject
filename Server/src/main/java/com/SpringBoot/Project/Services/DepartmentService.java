@@ -31,5 +31,21 @@ public class DepartmentService {
         }
     }
 
-    
+    public Result<Department> saveOrUpdateDepartment(Department department){
+        try{
+            Department savedDepartment = departmentInterface.save(department);
+            return Result.success(savedDepartment, "Department has been saved.");
+        }catch (Exception e){
+            return Result.failure("Department could not be saved.", List.of(e.getMessage()));
+        }
+    }
+
+    public Result<Void> deleteDepartmentById(long id){
+        if(departmentInterface.existsById(id)){
+            departmentInterface.deleteById(id);
+            return Result.success(null, "Department was deleted");
+        }else{
+            return Result.failure("Department not found", List.of("No departments found with id of" + id));
+        }
+    }
 }
