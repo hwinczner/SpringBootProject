@@ -1,4 +1,6 @@
 package com.SpringBoot.Project.Services;
+
+import com.SpringBoot.Project.Models.Department;
 import com.SpringBoot.Project.Models.Employee;
 import com.SpringBoot.Project.Models.Result;
 import com.SpringBoot.Project.Repositories.EmployeeInterface;
@@ -33,6 +35,15 @@ public class EmployeeService {
             return Result.success(employee.get(), "Employee found!");
         }else{
             return Result.failure("Employee not found.", List.of("No employees found with id of: " + id));
+        }
+    }
+
+    public Result<List<Employee>> getEmployeeByDepartment(Department department){
+        List<Employee> departmentEmployees = employeeInterface.findAllByDepartment(department);
+        if(departmentEmployees.isEmpty()){
+            return Result.failure("No employees found in this department" + department.getName(), List.of());
+        }else{
+            return Result.success(departmentEmployees, "Employees fetched successfully for department: " + department.getName());
         }
     }
 

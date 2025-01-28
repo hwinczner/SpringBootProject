@@ -1,10 +1,13 @@
 package com.SpringBoot.Project.Repositories;
 
+import com.SpringBoot.Project.Models.Department;
 import com.SpringBoot.Project.Models.Employee;
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
 
 
 public interface EmployeeInterface extends JpaRepository<Employee, Long> {
 
-    //Add custom classes if we need them (probably won't since were just doing basic CRUD operations).
+    List<Employee> findAllByDepartment(Department department);
 }
