@@ -12,7 +12,7 @@ import java.util.Optional;
 @Service
 public class EmployeeService {
 
-    private EmployeeInterface employeeInterface;
+    private final EmployeeInterface employeeInterface;
 
     @Autowired
     public EmployeeService(EmployeeInterface employeeInterface){
@@ -52,7 +52,6 @@ public class EmployeeService {
         }else{
             return Result.failure("Employee not found.", List.of("No employees found with id of: " + id));
         }
-
 
     }
 }
