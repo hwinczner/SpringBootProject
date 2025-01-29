@@ -26,6 +26,10 @@ public class Department {
         this.description = description;
     }
 
+    public long getDepartmentId() {
+        return departmentId;
+    }
+
     public String getName() {
         return name;
     }

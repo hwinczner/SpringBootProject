@@ -42,6 +42,10 @@ public class Employee {
         this.role = role;
     }
 
+    public long getEmployeeId() {
+        return employeeId;
+    }
+
     public String getName() {
         return name;
     }
