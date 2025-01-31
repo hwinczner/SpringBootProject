@@ -27,7 +27,7 @@ public class DepartmentService {
         if(department.isPresent()){
             return Result.success(department.get(), "Department fetched successfully.");
         }else{
-            return Result.failure("Department not found.", List.of("No departments found with id of" + id));
+            return Result.failure("Department not found.", List.of("No departments found with id of " + id));
         }
     }
 

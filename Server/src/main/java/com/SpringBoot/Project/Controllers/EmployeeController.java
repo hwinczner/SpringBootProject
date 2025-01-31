@@ -2,6 +2,7 @@ package com.SpringBoot.Project.Controllers;
 
 import com.SpringBoot.Project.Models.Employee;
 import com.SpringBoot.Project.Models.Department;
+import com.SpringBoot.Project.Services.DepartmentService;
 import com.SpringBoot.Project.Services.EmployeeService;
 import com.SpringBoot.Project.Models.Result;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,9 @@ public class EmployeeController {
 
     @Autowired
     private EmployeeService employeeService;
+
+    @Autowired
+    private DepartmentService departmentService;
 
     // GET all employees
     @GetMapping
@@ -39,8 +43,27 @@ public class EmployeeController {
 
     // POST create a new employee
     @PostMapping
-    public Employee createEmployee(@RequestBody Employee employee) {
-        return null;
+    public ResponseEntity<?> createEmployee(@RequestBody Employee employee) {
+        if (employee.getDepartment() == null) {
+            return new ResponseEntity<>("Department ID is required", HttpStatus.BAD_REQUEST);
+        }
+
+        long departmentId = employee.getDepartment().getDepartmentId();
+        Result<Department> department = departmentService.getDepartmentById(departmentId);
+
+        if (department == null) {
+            return new ResponseEntity<>("Department with ID " + departmentId + " not found", HttpStatus.BAD_REQUEST);
+        }
+
+        employee.setDepartment(department.getData());
+
+        Result<Employee> result = employeeService.saveOrUpdateEmployee(employee);
+
+        if (result.isSuccess()) {
+            return new ResponseEntity<>(result.getData(), HttpStatus.CREATED);
+        }
+
+        return new ResponseEntity<>(result.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
     // PUT update an employee
