@@ -31,8 +31,15 @@ public class DepartmentController {
 
     // POST create a new department
     @PostMapping
-    public Department createDepartment(@RequestBody Department department) {
-        return null;
+    public ResponseEntity<?> createDepartment(@RequestBody Department department) {
+        Result<Department> result = departmentService.saveOrUpdateDepartment(department);
+        if(result.isSuccess()){
+            return new ResponseEntity<>(HttpStatus.CREATED);
+        }
+
+        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+
+
     }
 
     // PUT update a department
