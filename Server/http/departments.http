@@ -1,0 +1,40 @@
+@url = http://localhost:8080/api/departments
+
+
+###GET all request
+GET {{url}} HTTP/1.1
+Content-Type: application/json
+
+###GET by id request
+GET http://localhost:8080/api/departments/1 HTTP/1.1
+
+###POST request
+POST {{url}} HTTP/1.1
+Content-Type: application/json
+
+{
+  "name": "Software engineering",
+  "description": "creating API endpoints with spring boot"
+}
+
+###
+POST {{url}} HTTP/1.1
+Content-Type: application/json
+
+{
+  "name": "Marketing",
+  "description": "Manages stocks and stock holders"
+}
+
+###PUT request
+PUT http://localhost:8080/api/departments/1 HTTP/1.1
+Content-Type: application/json
+
+{
+    "departmentId": "1",
+    "name": "HR",
+    "description": "Human resources"
+}
+
+###DELETE request
+DELETE http://localhost:8080/api/departments/1 HTTP/1.1
