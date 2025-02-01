@@ -26,9 +26,15 @@ public class LeaveRequestController {
 
     // Submit a new leave request (Employee only)
     @PostMapping
-    public ResponseEntity<Result<LeaveRequest>> submitLeaveRequest(@RequestBody LeaveRequest leaveRequest) {
-        return ResponseEntity.ok(leaveRequestService.submitLeaveRequest(leaveRequest));
+    public ResponseEntity<Result<LeaveRequest>> submitLeaveRequest(
+            @RequestBody LeaveRequest leaveRequest,
+            @RequestParam Long employeeId
+    ) {
+        Result<LeaveRequest> result = leaveRequestService.submitLeaveRequest(leaveRequest, employeeId);
+        return ResponseEntity.ok(result);
     }
+
+
 
     // Update a leave request status (Manager only)
     @PutMapping("/{id}")

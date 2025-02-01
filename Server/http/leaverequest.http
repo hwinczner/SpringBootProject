@@ -3,16 +3,18 @@ GET http://localhost:8080/api/leaves
 Content-Type: application/json
 
 ### Submit a new leave request
-POST http://localhost:8080/api/leaves
+POST http://localhost:8080/api/leaves?employeeId=2
 Content-Type: application/json
 
 {
-    "employeeId": 1,
-    "startDate": "2025-02-10",
-    "endDate": "2025-02-15",
-    "reason": "Vacation",
-    "status": "PENDING"
+  "startDate": "2025-02-10",
+  "endDate": "2025-02-15",
+  "status": "PENDING",
+  "reason": "Vacation",
+  "managerComment": "Waiting for approval"
 }
+
+
 
 ### Update a leave request status
 PUT http://localhost:8080/api/leaves/1

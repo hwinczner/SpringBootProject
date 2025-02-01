@@ -1,7 +1,9 @@
 package com.SpringBoot.Project.Services;
 
+import com.SpringBoot.Project.Models.Employee;
 import com.SpringBoot.Project.Models.LeaveRequest;
 import com.SpringBoot.Project.Models.Result;
+import com.SpringBoot.Project.Repositories.EmployeeInterface;
 import com.SpringBoot.Project.Repositories.LeaveRequestInterface;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,6 +15,9 @@ public class LeaveRequestService {
     @Autowired
     private LeaveRequestInterface leaveRequestInterface;
 
+    @Autowired
+    private EmployeeInterface employeeInterface;
+
     // Get all leave requests
     public Result<List<LeaveRequest>> getAllLeaveRequests() {
         List<LeaveRequest> leaveRequests = leaveRequestInterface.findAll();
@@ -20,13 +25,19 @@ public class LeaveRequestService {
     }
 
     // Submit a new leave request
-    public Result<LeaveRequest> submitLeaveRequest(LeaveRequest leaveRequest) {
-        try {
-            LeaveRequest savedRequest = leaveRequestInterface.save(leaveRequest);
-            return Result.success(savedRequest, "Leave request submitted successfully.");
-        } catch (Exception e) {
-            return Result.failure("Failed to submit leave request.", List.of(e.getMessage()));
+    public Result<LeaveRequest> submitLeaveRequest(LeaveRequest leaveRequest, Long employeeId) {
+        Optional<Employee> employeeOptional = employeeInterface.findById(employeeId);
+
+        if (employeeOptional.isEmpty()) {
+            return Result.failure("Employee not found", List.of("No employee found with ID: " + employeeId));
         }
+
+        Employee employee = employeeOptional.get();
+        leaveRequest.setEmployee(employee);
+
+        LeaveRequest savedLeaveRequest = leaveRequestInterface.save(leaveRequest);
+
+        return Result.success(savedLeaveRequest, "Leave request submitted successfully!");
     }
 
     // Update a leave request (approve/reject)
