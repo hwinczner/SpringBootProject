@@ -7,6 +7,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -20,17 +21,25 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
 
+    private JwtAuthEntryPoint jwtAuthEntryPoint;
     private CustomUserDetailsService customUserDetailsService;
 
     @Autowired
-    public SecurityConfig(CustomUserDetailsService customUserDetailsService) {
+    public SecurityConfig(CustomUserDetailsService customUserDetailsService, JwtAuthEntryPoint jwtAuthEntryPoint) {
         this.customUserDetailsService = customUserDetailsService;
+        this.jwtAuthEntryPoint = jwtAuthEntryPoint;
     }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
         http
                 .csrf().disable()
+                .exceptionHandling()
+                .authenticationEntryPoint(jwtAuthEntryPoint)
+                .and()
+                .sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and()
                 .authorizeRequests()
                 .requestMatchers("api/auth/**").permitAll()
                 .anyRequest().authenticated()
@@ -38,27 +47,6 @@ public class SecurityConfig {
                 .httpBasic();
 
         return http.build();
-    }
-
-    @Bean
-    public UserDetailsService user(){
-        UserDetails Admin = User.builder()
-                .username("admin")
-                .password("password")
-                .roles("ADMIN")
-                .build();
-        UserDetails Manager = User.builder()
-                .username("manager")
-                .password("password")
-                .roles("MANAGER")
-                .build();
-        UserDetails Employee = User.builder()
-                .username("employee")
-                .password("password")
-                .roles("EMPLOYEE")
-                .build();
-
-        return new InMemoryUserDetailsManager(Admin, Manager, Employee);
     }
 
     @Bean
