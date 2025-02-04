@@ -34,6 +34,10 @@ public class UserEntity {
         this.roles = roles;
     }
 
+    public UserEntity() {
+
+    }
+
     public String getUsername() {
         return username;
     }
