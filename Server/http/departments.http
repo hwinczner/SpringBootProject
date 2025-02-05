@@ -1,5 +1,5 @@
 @url = http://localhost:8080/api/departments
-@token = eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJoZW5yeVdpbmN6bmVyIiwiaWF0IjoxNzM4NzIzMzcxLCJleHAiOjE3Mzk3MjMzNzF9.VWk3Y08kTuTbwkDztAkIiKabEx-xH_EyuAHC6zVI6VIi-SwM6KaN-d6E6skyrfPE3M2KLjkbxupfLMg-LDD-Ng
+@token = eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJoZW5yeVdpbmN6bmVyIiwiaWF0IjoxNzM4NzI4NTAyLCJleHAiOjE3Mzk3Mjg1MDJ9.8TSWLJ99ccTVzvq2gVAbv4BGBW3-KiiwQo6TaMOyq0ttiKUnWTejR9heR2dqIthm0VHo_ZCyGNZQMKcmUtgB1Q
 
 ###GET all request
 GET {{url}} HTTP/1.1
