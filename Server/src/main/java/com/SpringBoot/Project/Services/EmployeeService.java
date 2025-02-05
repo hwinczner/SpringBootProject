@@ -1,8 +1,6 @@
 package com.SpringBoot.Project.Services;
 
-import com.SpringBoot.Project.Models.Department;
-import com.SpringBoot.Project.Models.Employee;
-import com.SpringBoot.Project.Models.Result;
+import com.SpringBoot.Project.Models.*;
 import com.SpringBoot.Project.Repositories.EmployeeInterface;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +16,16 @@ public class EmployeeService {
     private final DepartmentService departmentService;
 
     @Autowired
-    public EmployeeService(EmployeeInterface employeeInterface, DepartmentService departmentService) {
+    private DepartmentService departmentService;
+
+    @Autowired
+    private RoleService roleService;
+
+    @Autowired
+    private UserEntityService userEntityService;
+
+    @Autowired
+    public EmployeeService(EmployeeInterface employeeInterface){
         this.employeeInterface = employeeInterface;
         this.departmentService = departmentService;
     }
@@ -50,13 +57,14 @@ public class EmployeeService {
     }
 
     public Result<Employee> saveOrUpdateEmployee(Employee employee){
+
         if (employee == null || employee.getDepartment() == null) {
-            return Result.failure("Invalid input", List.of("Employee and department must not be null"));
+            return Result.failure("Not a valid Department id", List.of("Employee and department must not be null"));
         }
 
         long deptId = employee.getDepartment().getDepartmentId();
-
         Result<Department> deptResult;
+
         try {
             deptResult = departmentService.getDepartmentById(deptId);
         } catch (Exception e) {
@@ -68,6 +76,39 @@ public class EmployeeService {
         }
 
         employee.setDepartment(deptResult.getData());
+
+
+        int roleId = employee.getRole().getId(); // adjust based on your Roles class's method
+        Result<Roles> roleResult;
+
+        try {
+            roleResult = roleService.getRoleById(roleId);
+        } catch (Exception e) {
+            return Result.failure("Error retrieving role", List.of(e.getMessage()));
+        }
+
+        if (!roleResult.isSuccess()) {
+            return Result.failure("Failed to find role",
+                    List.of("No role of id " + roleId));
+        }
+
+        employee.setRole(roleResult.getData());
+
+        String username = employee.getUserEntity().getUsername(); // adjust based on your Roles class's method
+        Result<UserEntity> userEntityResult;
+
+        try {
+            userEntityResult = userEntityService.getUserByUsername(username);
+        } catch (Exception e) {
+            return Result.failure("Error retrieving username", List.of(e.getMessage()));
+        }
+
+        if (!userEntityResult.isSuccess()) {
+            return Result.failure("Failed to find username",
+                    List.of("No username of " + username));
+        }
+
+        employee.setUserEntity(userEntityResult.getData());
 
         try {
             Employee savedEmployee = employeeInterface.save(employee);

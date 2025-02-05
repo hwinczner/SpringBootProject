@@ -27,19 +27,32 @@ public class Employee {
     @JoinColumn(name = "department_id", nullable = false) //Joins at the specific foreign key column name.
     private Department department;
 
-    @NotNull(message = "Role cannot be null")
-    @Column(nullable = false)
-    private String role;
+    @ManyToOne
+    @JoinColumn(name = "roles_id", nullable = false)
+    private Roles role;
+
+    @ManyToOne
+    @JoinColumn(name = "user_entity_id", nullable = false)
+    private UserEntity userEntity;
 
     public Employee(){
         //Default constructor for JPA
     }
 
-    public Employee(String name, String email, Department department, String role){
+    public Employee(String name, String email, Department department, Roles role, UserEntity userEntity){
         this.name = name;
         this.email = email;
         this.department = department;
         this.role = role;
+        this.userEntity = userEntity;
+    }
+
+    public UserEntity getUserEntity() {
+        return userEntity;
+    }
+
+    public void setUserEntity(UserEntity userEntity) {
+        this.userEntity = userEntity;
     }
 
     public long getEmployeeId() {
@@ -70,11 +83,11 @@ public class Employee {
         this.department = department;
     }
 
-    public String getRole() {
+    public Roles getRole() {
         return role;
     }
 
-    public void setRole(String role) {
+    public void setRole(Roles role) {
         this.role = role;
     }
 

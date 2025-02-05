@@ -1,17 +1,24 @@
 @url = http://localhost:8080/api/employees
 
+@token = eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJBZG1pbiIsImlhdCI6MTczODc4OTY5OSwiZXhwIjoxNzM5Nzg5Njk5fQ.SD9RthTG9pSb01AQGUUvFHODh0C-D4dlJyXzC0GMJwJPsWuoRbgUzeRFOs1dn1OWFULax_uN9JrtD3aAqwBwvQ
 ###GET all request
 GET {{url}} HTTP/1.1
 
 ###POST request
 POST {{url}} HTTP/1.1
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
     "name": "John Doe",
     "email": "johndoe@example.com",
-    "role": "Software Engineer",
     "department": {
-        "departmentId": 2
+        "departmentId": 1
+    },
+    "role": {
+        "id": 3
+    },
+    "userEntity":{
+        "username": "henryWinczner"
     }
 }
