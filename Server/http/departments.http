@@ -1,9 +1,10 @@
 @url = http://localhost:8080/api/departments
-
+@token = eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJoZW5yeVdpbmN6bmVyIiwiaWF0IjoxNzM4NzIzMzcxLCJleHAiOjE3Mzk3MjMzNzF9.VWk3Y08kTuTbwkDztAkIiKabEx-xH_EyuAHC6zVI6VIi-SwM6KaN-d6E6skyrfPE3M2KLjkbxupfLMg-LDD-Ng
 
 ###GET all request
 GET {{url}} HTTP/1.1
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 ###GET by id request
 GET http://localhost:8080/api/departments/1 HTTP/1.1
@@ -11,6 +12,7 @@ GET http://localhost:8080/api/departments/1 HTTP/1.1
 ###POST request
 POST {{url}} HTTP/1.1
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "name": "Software engineering",
@@ -20,6 +22,7 @@ Content-Type: application/json
 ###
 POST {{url}} HTTP/1.1
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "name": "Marketing",
@@ -29,6 +32,7 @@ Content-Type: application/json
 ###PUT request
 PUT http://localhost:8080/api/departments/1 HTTP/1.1
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
     "departmentId": "1",
@@ -38,3 +42,4 @@ Content-Type: application/json
 
 ###DELETE request
 DELETE http://localhost:8080/api/departments/1 HTTP/1.1
+Authorization: Bearer {{token}}

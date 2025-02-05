@@ -25,7 +25,7 @@ public class LeaveRequestController {
     }
 
     // Submit a new leave request (Employee only)
-    @PostMapping
+    @PostMapping("submit")
     public ResponseEntity<Result<LeaveRequest>> submitLeaveRequest(
             @RequestBody LeaveRequest leaveRequest,
             @RequestParam Long employeeId

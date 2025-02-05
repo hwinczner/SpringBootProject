@@ -2,18 +2,22 @@ package com.SpringBoot.Project.Security;
 
 
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwt;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
+import java.security.Key;
 import java.util.Date;
 
 
 @Component
 public class JwtGenerator {
+
+
+    Key key = Keys.secretKeyFor(SignatureAlgorithm.HS512);
 
     public String generateToken(Authentication authentication){
         String user = authentication.getName();
@@ -24,7 +28,7 @@ public class JwtGenerator {
                 .setSubject(user)
                 .setIssuedAt(currentDate)
                 .setExpiration(expireDate)
-                .signWith(SignatureAlgorithm.HS512, SecurityConstants.JWT_SECRET)
+                .signWith(key)
                 .compact();
 
         return token;
@@ -33,18 +37,24 @@ public class JwtGenerator {
 
     public String getUserName(String token){
         Claims claims = Jwts.parser()
-                .setSigningKey(SecurityConstants.JWT_SECRET)
+                .setSigningKey(key)
                 .parseClaimsJws(token)
                 .getBody();
         return claims.getSubject();
     }
 
-    public boolean validateToken(String token){
-        try{
-            Jwts.parser().setSigningKey(SecurityConstants.JWT_SECRET).parseClaimsJws(token);
+    public boolean validateToken(String token) {
+        try {
+            Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(token);
             return true;
-        }catch (Exception e){
-            throw new AuthenticationCredentialsNotFoundException("JWT incorrect or expired");
+        } catch (Exception e) {
+            // Log the actual exception message for debugging purposes
+            System.err.println("JWT validation failed: " + e.getMessage());
+            e.printStackTrace();
+            throw new AuthenticationCredentialsNotFoundException("JWT incorrect or expired", e);
         }
     }
 }

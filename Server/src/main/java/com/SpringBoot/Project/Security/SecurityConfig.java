@@ -3,18 +3,16 @@ package com.SpringBoot.Project.Security;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 
 @Configuration
@@ -23,11 +21,13 @@ public class SecurityConfig {
 
     private JwtAuthEntryPoint jwtAuthEntryPoint;
     private CustomUserDetailsService customUserDetailsService;
+    private JwtGenerator jwtGenerator;
 
     @Autowired
-    public SecurityConfig(CustomUserDetailsService customUserDetailsService, JwtAuthEntryPoint jwtAuthEntryPoint) {
+    public SecurityConfig(CustomUserDetailsService customUserDetailsService, JwtAuthEntryPoint jwtAuthEntryPoint, JwtGenerator jwtGenerator) {
         this.customUserDetailsService = customUserDetailsService;
         this.jwtAuthEntryPoint = jwtAuthEntryPoint;
+        this.jwtGenerator = jwtGenerator;
     }
 
     @Bean
@@ -41,11 +41,13 @@ public class SecurityConfig {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authorizeRequests()
-                .requestMatchers("api/auth/**").permitAll()
-                .anyRequest().authenticated()
-                .and()
-                .httpBasic();
-
+                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/leaves/submit").hasAuthority("EMPLOYEE")
+                .requestMatchers("/api/leaves/**").hasAnyAuthority("ADMIN", "MANAGER")
+                .requestMatchers("/api/departments/**").hasAuthority("ADMIN")
+                .requestMatchers("/api/employees/**").hasAuthority("ADMIN")
+                .anyRequest().authenticated();
+        http.addFilterBefore(jwtAuthenticationFilter(jwtGenerator), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
@@ -57,5 +59,10 @@ public class SecurityConfig {
     @Bean
     PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public JwtAuthenticationFilter jwtAuthenticationFilter(JwtGenerator jwtGenerator){
+        return new JwtAuthenticationFilter(jwtGenerator, customUserDetailsService);
     }
 }

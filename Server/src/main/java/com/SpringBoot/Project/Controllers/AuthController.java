@@ -1,11 +1,13 @@
 package com.SpringBoot.Project.Controllers;
 
+import com.SpringBoot.Project.Dto.AuthResponseDto;
 import com.SpringBoot.Project.Dto.LoginDto;
 import com.SpringBoot.Project.Dto.RegisterDto;
 import com.SpringBoot.Project.Models.Roles;
 import com.SpringBoot.Project.Models.UserEntity;
 import com.SpringBoot.Project.Repositories.RoleInterface;
 import com.SpringBoot.Project.Repositories.UserInterface;
+import com.SpringBoot.Project.Security.JwtGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,21 +31,23 @@ public class AuthController {
     private UserInterface userInterface;
     private RoleInterface roleInterface;
     private PasswordEncoder passwordEncoder;
+    private JwtGenerator jwtGenerator;
 
     @Autowired
-    public AuthController(AuthenticationManager authenticationManager, UserInterface userInterface, RoleInterface roleInterface, PasswordEncoder passwordEncoder) {
+    public AuthController(AuthenticationManager authenticationManager, UserInterface userInterface, RoleInterface roleInterface, PasswordEncoder passwordEncoder, JwtGenerator jwtGenerator) {
         this.authenticationManager = authenticationManager;
         this.userInterface = userInterface;
         this.roleInterface = roleInterface;
         this.passwordEncoder = passwordEncoder;
+        this.jwtGenerator = jwtGenerator;
     }
 
     @PostMapping("login")
-    public ResponseEntity<String> login(@RequestBody LoginDto loginDto){
+    public ResponseEntity<AuthResponseDto> login(@RequestBody LoginDto loginDto){
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginDto.getUsername(), loginDto.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
-
-        return new ResponseEntity<>("User has signed in", HttpStatus.OK);
+        String token = jwtGenerator.generateToken(authentication);
+        return new ResponseEntity<>(new AuthResponseDto(token), HttpStatus.OK);
     }
 
     @PostMapping("register")

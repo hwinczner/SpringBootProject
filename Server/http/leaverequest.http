@@ -3,8 +3,9 @@ GET http://localhost:8080/api/leaves
 Content-Type: application/json
 
 ### Submit a new leave request
-POST http://localhost:8080/api/leaves?employeeId=2
+POST http://localhost:8080/api/leaves/submit?employeeId=2
 Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJoZW5yeVdpbmN6bmVyIiwiaWF0IjoxNzM4Njk3MTk5LCJleHAiOjE3Mzg2OTcyMDZ9.th1zEfju_9sYgQGtd39TiNi_zII8KLjCpt4YQsgZBpk41D0UEZOl-r1b4ipaEWwZyd16E_kFk_epUODY1n_rPQ
 
 {
   "startDate": "2025-02-10",
