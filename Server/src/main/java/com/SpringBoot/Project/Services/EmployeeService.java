@@ -13,10 +13,9 @@ import java.util.Optional;
 public class EmployeeService {
 
     private final EmployeeInterface employeeInterface;
-    private final DepartmentService departmentService;
 
     @Autowired
-    private DepartmentService departmentService;
+    private final DepartmentService departmentService;
 
     @Autowired
     private RoleService roleService;
@@ -25,7 +24,7 @@ public class EmployeeService {
     private UserEntityService userEntityService;
 
     @Autowired
-    public EmployeeService(EmployeeInterface employeeInterface){
+    public EmployeeService(EmployeeInterface employeeInterface, DepartmentService departmentService){
         this.employeeInterface = employeeInterface;
         this.departmentService = departmentService;
     }

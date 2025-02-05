@@ -1,9 +1,7 @@
 package com.SpringBoot.Project.ControllerTests;
 
 import com.SpringBoot.Project.Controllers.EmployeeController;
-import com.SpringBoot.Project.Models.Department;
-import com.SpringBoot.Project.Models.Employee;
-import com.SpringBoot.Project.Models.Result;
+import com.SpringBoot.Project.Models.*;
 import com.SpringBoot.Project.Services.DepartmentService;
 import com.SpringBoot.Project.Services.EmployeeService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -43,6 +41,8 @@ class EmployeeControllerTest {
     private Department department;
     private Result<Employee> successResult;
     private Result<Employee> failureResult;
+    private Roles roles;
+    private UserEntity userEntity;
 
     @BeforeEach
     void setUp() {
@@ -55,7 +55,7 @@ class EmployeeControllerTest {
             throw new RuntimeException("Failed to set department ID", e);
         }
 
-        employee = new Employee("John Doe", "john.doe@example.com", department, "Developer");
+        employee = new Employee("John Doe", "john.doe@example.com", department, roles, userEntity);
         try {
             var empField = Employee.class.getDeclaredField("employeeId");
             empField.setAccessible(true);

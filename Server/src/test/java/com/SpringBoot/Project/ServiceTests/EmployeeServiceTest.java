@@ -33,6 +33,8 @@ class EmployeeServiceTest {
 
     private Employee employee;
     private Department department;
+    private Roles roles;
+    private UserEntity userEntity;
 
     @BeforeEach
     void setUp() {
@@ -45,7 +47,7 @@ class EmployeeServiceTest {
             fail("Failed to set department ID");
         }
 
-        employee = new Employee("John Doe", "john.doe@example.com", department, "Developer");
+        employee = new Employee("John Doe", "john.doe@example.com", department, roles, userEntity);
     }
 
     @Test

@@ -1,8 +1,6 @@
 package com.SpringBoot.Project.ServiceTests;
 
-import com.SpringBoot.Project.Models.Department;
-import com.SpringBoot.Project.Models.Employee;
-import com.SpringBoot.Project.Models.Result;
+import com.SpringBoot.Project.Models.*;
 import com.SpringBoot.Project.Repositories.DepartmentInterface;
 import com.SpringBoot.Project.Repositories.EmployeeInterface;
 import com.SpringBoot.Project.Services.DepartmentService;
@@ -34,6 +32,8 @@ class DepartmentServiceTest {
     private DepartmentService departmentService;
 
     private Department department;
+    private Roles roles;
+    private UserEntity userEntity;
 
     @BeforeEach
     void setUp() {
@@ -141,7 +141,7 @@ class DepartmentServiceTest {
     @Test
     void deleteDepartmentById_HasEmployees() {
         Department department = new Department("IT", "Information Technology");
-        Employee employee = new Employee("John Doe", "john@example.com", department, "Developer");
+        Employee employee = new Employee("John Doe", "john.doe@example.com", department, roles, userEntity);
 
         when(departmentInterface.findById(1L)).thenReturn(Optional.of(department));
         when(employeeInterface.findAllByDepartment(department)).thenReturn(List.of(employee));

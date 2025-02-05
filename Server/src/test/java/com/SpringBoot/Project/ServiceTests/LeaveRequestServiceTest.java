@@ -34,10 +34,13 @@ class LeaveRequestServiceTest {
 
     private Employee employee;
     private LeaveRequest leaveRequest;
+    private Department department;
+    private Roles roles;
+    private UserEntity userEntity;
 
     @BeforeEach
     void setUp() {
-        employee = new Employee("John Doe", "john.doe@example.com", new Department(), "Employee");
+        employee = new Employee("John Doe", "john.doe@example.com", department, roles, userEntity);
         leaveRequest = new LeaveRequest(
                 employee,
                 LocalDate.now().plusDays(1),

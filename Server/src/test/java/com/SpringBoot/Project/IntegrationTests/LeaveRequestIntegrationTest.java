@@ -42,6 +42,8 @@ public class LeaveRequestIntegrationTest {
     private Department department;
     private Employee employee;
     private Employee managerEmployee;
+    private Roles roles;
+    private UserEntity userEntity;
 
     @BeforeEach
     void setUp() {
@@ -54,11 +56,11 @@ public class LeaveRequestIntegrationTest {
         department = departmentInterface.save(new Department("IT", "Information Technology"));
 
         // Create test employee
-        employee = new Employee("John Doe", "john.doe@example.com", department, "Developer");
+        employee = new Employee("John Doe", "john.doe@example.com", department, roles, userEntity);
         employee = employeeInterface.save(employee);
 
         // Create test manager
-        managerEmployee = new Employee("Jane Manager", "jane.manager@example.com", department, "Manager");
+        managerEmployee = new Employee("John Doe", "john.doe@example.com", department, roles, userEntity);
         managerEmployee = employeeInterface.save(managerEmployee);
     }
 
@@ -165,7 +167,7 @@ public class LeaveRequestIntegrationTest {
         leaveRequestInterface.save(firstEmployeeRequest);
 
         // Create second employee's request for same dates (should be allowed)
-        Employee secondEmployee = new Employee("Jane Smith", "jane.smith@example.com", department, "Developer");
+        Employee secondEmployee = new Employee("John Doe", "john.doe@example.com", department, roles, userEntity);
         secondEmployee = employeeInterface.save(secondEmployee);
 
         LeaveRequest secondEmployeeRequest = createTestLeaveRequest(

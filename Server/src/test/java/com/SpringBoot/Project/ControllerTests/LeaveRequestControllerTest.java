@@ -36,6 +36,8 @@ class LeaveRequestControllerTest {
 
     private LeaveRequest leaveRequest;
     private Result<LeaveRequest> successResult;
+    private Roles roles;
+    private UserEntity userEntity;
 
     @BeforeEach
     void setUp() {
@@ -50,7 +52,7 @@ class LeaveRequestControllerTest {
         }
 
         // Setup Employee
-        Employee employee = new Employee("John Doe", "john.doe@example.com", department, "Developer");
+        Employee employee = new Employee("John Doe", "john.doe@example.com", department, roles, userEntity);
         try {
             var empField = Employee.class.getDeclaredField("employeeId");
             empField.setAccessible(true);
