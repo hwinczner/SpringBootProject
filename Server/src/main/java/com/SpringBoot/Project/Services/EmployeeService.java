@@ -15,13 +15,12 @@ import java.util.Optional;
 public class EmployeeService {
 
     private final EmployeeInterface employeeInterface;
+    private final DepartmentService departmentService;
 
     @Autowired
-    private DepartmentService departmentService;
-
-    @Autowired
-    public EmployeeService(EmployeeInterface employeeInterface){
+    public EmployeeService(EmployeeInterface employeeInterface, DepartmentService departmentService) {
         this.employeeInterface = employeeInterface;
+        this.departmentService = departmentService;
     }
 
     public Result<List<Employee>> getAllEmployees(){

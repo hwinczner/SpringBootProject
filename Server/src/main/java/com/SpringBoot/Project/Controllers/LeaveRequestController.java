@@ -2,14 +2,13 @@ package com.SpringBoot.Project.Controllers;
 
 import com.SpringBoot.Project.Models.LeaveRequest;
 import com.SpringBoot.Project.Models.Result;
-import com.SpringBoot.Project.Repositories.LeaveRequestInterface;
 import com.SpringBoot.Project.Services.LeaveRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/leaves")
@@ -31,10 +30,20 @@ public class LeaveRequestController {
             @RequestParam Long employeeId
     ) {
         Result<LeaveRequest> result = leaveRequestService.submitLeaveRequest(leaveRequest, employeeId);
-        return ResponseEntity.ok(result);
+
+        if (result.isSuccess()) {
+            return ResponseEntity.ok(result);
+        } else if (result.getMessage().startsWith("Invalid")) {
+            // This catches both "Invalid dates" and "Invalid date range"
+            return ResponseEntity.badRequest().body(result);
+        } else if (result.getMessage().contains("Employee not found")) {
+            return ResponseEntity.notFound().build();
+        } else if (result.getMessage().contains("Overlapping leave request")) {
+            return ResponseEntity.badRequest().body(result);
+        } else {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result);
+        }
     }
-
-
 
     // Update a leave request status (Manager only)
     @PutMapping("/{id}")

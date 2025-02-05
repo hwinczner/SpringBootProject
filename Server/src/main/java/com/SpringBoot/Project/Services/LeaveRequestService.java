@@ -7,6 +7,8 @@ import com.SpringBoot.Project.Repositories.EmployeeInterface;
 import com.SpringBoot.Project.Repositories.LeaveRequestInterface;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,18 +28,45 @@ public class LeaveRequestService {
 
     // Submit a new leave request
     public Result<LeaveRequest> submitLeaveRequest(LeaveRequest leaveRequest, Long employeeId) {
+        // Check employee exists first
         Optional<Employee> employeeOptional = employeeInterface.findById(employeeId);
-
         if (employeeOptional.isEmpty()) {
-            return Result.failure("Employee not found", List.of("No employee found with ID: " + employeeId));
+            return Result.failure("Employee not found",
+                    List.of("No employee found with ID: " + employeeId));
+        }
+
+        // Then validate dates
+        if (leaveRequest.getStartDate().isBefore(LocalDate.now())) {
+            return Result.failure("Invalid dates",
+                    List.of("Leave request start date cannot be in the past"));
+        }
+
+        if (leaveRequest.getEndDate().isBefore(leaveRequest.getStartDate())) {
+            return Result.failure("Invalid date range",
+                    List.of("End date cannot be before start date"));
         }
 
         Employee employee = employeeOptional.get();
         leaveRequest.setEmployee(employee);
 
-        LeaveRequest savedLeaveRequest = leaveRequestInterface.save(leaveRequest);
+        // Check for overlapping leave requests
+        List<LeaveRequest> overlappingRequests = leaveRequestInterface.findOverlappingLeaveRequests(
+                employeeId,
+                leaveRequest.getStartDate(),
+                leaveRequest.getEndDate()
+        );
 
-        return Result.success(savedLeaveRequest, "Leave request submitted successfully!");
+        if (!overlappingRequests.isEmpty()) {
+            return Result.failure("Overlapping leave request",
+                    List.of("An approved leave request already exists for these dates"));
+        }
+
+        try {
+            LeaveRequest savedLeaveRequest = leaveRequestInterface.save(leaveRequest);
+            return Result.success(savedLeaveRequest, "Leave request submitted successfully!");
+        } catch (Exception e) {
+            return Result.failure("Failed to submit leave request", List.of(e.getMessage()));
+        }
     }
 
     // Update a leave request (approve/reject)

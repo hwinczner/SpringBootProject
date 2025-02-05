@@ -5,6 +5,12 @@ import com.SpringBoot.Project.Models.Department;
 import com.SpringBoot.Project.Services.DepartmentService;
 import com.SpringBoot.Project.Services.EmployeeService;
 import com.SpringBoot.Project.Models.Result;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,27 +29,49 @@ public class EmployeeController {
     private DepartmentService departmentService;
 
     // GET all employees
+    @Operation(
+            summary = "Get all employees",
+            description = "Retrieves a list of all employees in the system"
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "Successfully retrieved employees",
+            content = @Content(schema = @Schema(implementation = Employee.class))
+    )
     @GetMapping
     public Result<List<Employee>> getAllEmployees() {
         return employeeService.getAllEmployees();
     }
 
     // GET employee by ID
+    @Operation(
+            summary = "Get employee by ID",
+            description = "Retrieves a specific employee by their ID"
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Employee found",
+                    content = @Content(schema = @Schema(implementation = Employee.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Employee not found"
+            )
+    })
     @GetMapping("/{id}")
     public ResponseEntity<Result<Employee>> getEmployeeById(@PathVariable Long id) {
         Result<Employee> result = employeeService.getEmployeeById(id);
-
-        // If the employee was found
         if (result.isSuccess()) {
-            return ResponseEntity.ok(result);  // Return 200 OK with employee data
+            return ResponseEntity.ok(result);
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(result);  // Return 404 if employee not found
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(result);
         }
     }
 
     // POST create a new employee
     @PostMapping
-    public ResponseEntity<?> createEmployee(@RequestBody Employee employee) {
+    public ResponseEntity<?> createEmployee(@Valid @RequestBody Employee employee) {
         if (employee.getDepartment() == null) {
             return new ResponseEntity<>("Department ID is required", HttpStatus.BAD_REQUEST);
         }
