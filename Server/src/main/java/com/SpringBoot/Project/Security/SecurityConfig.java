@@ -42,7 +42,7 @@ public class SecurityConfig {
                 .and()
                 .authorizeRequests()
                 .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/api/leaves/submit").hasAuthority("EMPLOYEE")
+                .requestMatchers("/api/leaves/submit").hasAnyAuthority("EMPLOYEE","MANAGER", "ADMIN")
                 .requestMatchers("/api/leaves/**").hasAnyAuthority("ADMIN", "MANAGER")
                 .requestMatchers("/api/departments/**").hasAnyAuthority("ADMIN", "MANAGER")
                 .requestMatchers("/api/employees/**").hasAuthority("ADMIN")

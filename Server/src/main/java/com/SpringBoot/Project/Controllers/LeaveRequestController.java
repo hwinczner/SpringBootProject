@@ -37,7 +37,7 @@ public class LeaveRequestController {
 
 
     // Update a leave request status (Manager only)
-    @PutMapping("/{id}")
+    @PutMapping("update/{id}")
     public ResponseEntity<Result<LeaveRequest>> updateLeaveRequest(@PathVariable Long id, @RequestBody LeaveRequest updatedRequest) {
         return ResponseEntity.ok(leaveRequestService.updateLeaveRequest(id, updatedRequest));
     }
