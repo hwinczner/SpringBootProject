@@ -1,8 +1,6 @@
 package com.SpringBoot.Project.ServiceTests;
 
-import com.SpringBoot.Project.Models.Department;
-import com.SpringBoot.Project.Models.Employee;
-import com.SpringBoot.Project.Models.Result;
+import com.SpringBoot.Project.Models.*;
 import com.SpringBoot.Project.Repositories.DepartmentInterface;
 import com.SpringBoot.Project.Repositories.EmployeeInterface;
 import com.SpringBoot.Project.Services.DepartmentService;
@@ -34,10 +32,53 @@ class DepartmentServiceTest {
     private DepartmentService departmentService;
 
     private Department department;
+    private Employee employee;
+    private Roles role;
+    private UserEntity userEntity;
 
     @BeforeEach
     void setUp() {
         department = new Department("IT", "Information Technology Department");
+
+        role = new Roles("ROLE_EMPLOYEE");
+        try {
+            var roleField = Roles.class.getDeclaredField("id");
+            roleField.setAccessible(true);
+            roleField.set(role, 1);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to set role ID", e);
+        }
+
+        userEntity = new UserEntity();
+        userEntity.setUsername("john.doe");
+        try {
+            var userField = UserEntity.class.getDeclaredField("id");
+            userField.setAccessible(true);
+            userField.set(userEntity, 1);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to set user ID", e);
+        }
+
+        employee = new Employee("John Doe", "john.doe@example.com", department, role, userEntity);
+    }
+
+    // Most test methods remain unchanged as they don't involve Employee...
+
+    @Test
+    void deleteDepartmentById_HasEmployees() {
+        Department department = new Department("IT", "Information Technology");
+        Employee employee = new Employee("John Doe", "john@example.com", department, role, userEntity);
+
+        when(departmentInterface.findById(1L)).thenReturn(Optional.of(department));
+        when(employeeInterface.findAllByDepartment(department)).thenReturn(List.of(employee));
+
+        Result<Void> result = departmentService.deleteDepartmentById(1L);
+
+        assertFalse(result.isSuccess());
+        assertNull(result.getData());
+        assertEquals("Cannot delete department with existing employees", result.getMessage());
+        assertTrue(result.getErrors().get(0).contains("still has 1 employees"));
+        verify(departmentInterface, never()).deleteById(anyLong());
     }
 
     @Test
@@ -135,23 +176,6 @@ class DepartmentServiceTest {
         assertNull(result.getData());
         assertEquals("Department not found", result.getMessage());
         assertEquals("No departments found with id of 1", result.getErrors().get(0));
-        verify(departmentInterface, never()).deleteById(anyLong());
-    }
-
-    @Test
-    void deleteDepartmentById_HasEmployees() {
-        Department department = new Department("IT", "Information Technology");
-        Employee employee = new Employee("John Doe", "john@example.com", department, "Developer");
-
-        when(departmentInterface.findById(1L)).thenReturn(Optional.of(department));
-        when(employeeInterface.findAllByDepartment(department)).thenReturn(List.of(employee));
-
-        Result<Void> result = departmentService.deleteDepartmentById(1L);
-
-        assertFalse(result.isSuccess());
-        assertNull(result.getData());
-        assertEquals("Cannot delete department with existing employees", result.getMessage());
-        assertTrue(result.getErrors().get(0).contains("still has 1 employees"));
         verify(departmentInterface, never()).deleteById(anyLong());
     }
 }

@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
@@ -34,10 +33,47 @@ class LeaveRequestServiceTest {
 
     private Employee employee;
     private LeaveRequest leaveRequest;
+    private Department department;
+    private Roles role;
+    private UserEntity userEntity;
 
     @BeforeEach
     void setUp() {
-        employee = new Employee("John Doe", "john.doe@example.com", new Department(), "Employee");
+        // Setup Department
+        department = new Department("IT", "Information Technology");
+        try {
+            var deptField = Department.class.getDeclaredField("departmentId");
+            deptField.setAccessible(true);
+            deptField.set(department, 1L);
+        } catch (Exception e) {
+            fail("Failed to set department ID");
+        }
+
+        // Setup Role
+        role = new Roles("ROLE_EMPLOYEE");
+        try {
+            var roleField = Roles.class.getDeclaredField("id");
+            roleField.setAccessible(true);
+            roleField.set(role, 1);
+        } catch (Exception e) {
+            fail("Failed to set role ID");
+        }
+
+        // Setup UserEntity
+        userEntity = new UserEntity();
+        userEntity.setUsername("john.doe");
+        try {
+            var userField = UserEntity.class.getDeclaredField("id");
+            userField.setAccessible(true);
+            userField.set(userEntity, 1);
+        } catch (Exception e) {
+            fail("Failed to set user ID");
+        }
+
+        // Setup Employee
+        employee = new Employee("John Doe", "john.doe@example.com", department, role, userEntity);
+
+        // Setup LeaveRequest
         leaveRequest = new LeaveRequest(
                 employee,
                 LocalDate.now().plusDays(1),
@@ -126,29 +162,6 @@ class LeaveRequestServiceTest {
         assertFalse(result.isSuccess());
         assertEquals("Leave request not found.", result.getMessage());
     }
-
-    /*@Test
-    void testSubmitLeaveRequest_Failure_PastStartDate() {
-        leaveRequest.setStartDate(LocalDate.now().minusDays(1));
-
-        Result<LeaveRequest> result = leaveRequestService.submitLeaveRequest(leaveRequest, 1L);
-
-        assertFalse(result.isSuccess());
-        assertEquals("Invalid dates", result.getMessage());
-        assertTrue(result.getErrors().get(0).contains("cannot be in the past"));
-    }
-
-    @Test
-    void testSubmitLeaveRequest_Failure_EndDateBeforeStartDate() {
-        leaveRequest.setStartDate(LocalDate.now().plusDays(5));
-        leaveRequest.setEndDate(LocalDate.now().plusDays(2));
-
-        Result<LeaveRequest> result = leaveRequestService.submitLeaveRequest(leaveRequest, 1L);
-
-        assertFalse(result.isSuccess());
-        assertEquals("Invalid date range", result.getMessage());
-        assertTrue(result.getErrors().get(0).contains("cannot be before start date"));
-    }*/
 
     @Test
     void testSubmitLeaveRequest_Failure_OverlappingDates() {
