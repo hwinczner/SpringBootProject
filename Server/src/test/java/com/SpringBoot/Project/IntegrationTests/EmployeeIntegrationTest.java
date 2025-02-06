@@ -39,6 +39,10 @@ public class EmployeeIntegrationTest {
         departmentInterface.deleteAll();
     }
 
+    private UserEntity userEntity;
+    private Roles roles;
+    private Department department;
+
     @Test
     @Transactional
     void completeEmployeeWorkflowTest() throws Exception {
@@ -57,7 +61,7 @@ public class EmployeeIntegrationTest {
         Department createdDepartment = departments.get(0);
 
         // Create an employee in that department
-        Employee employee = new Employee("John Doe", "john.doe@example.com", createdDepartment, "Developer");
+        Employee employee = new Employee("John Doe", "john.doe@example.com", department, roles, userEntity);
         String employeeJson = objectMapper.writeValueAsString(employee);
 
         String employeeResponse = mockMvc.perform(post("/api/employees")
@@ -74,7 +78,7 @@ public class EmployeeIntegrationTest {
                 .andExpect(jsonPath("$.data.department.name").value("IT"));
 
         // Update employee's role
-        createdEmployee.setRole("Senior Developer");
+        createdEmployee.setRole(roles);
         String updatedEmployeeJson = objectMapper.writeValueAsString(createdEmployee);
 
         mockMvc.perform(put("/api/employees/" + createdEmployee.getEmployeeId())
@@ -92,7 +96,7 @@ public class EmployeeIntegrationTest {
         department = departmentInterface.save(department);
 
         // Try to create employee with invalid email
-        Employee invalidEmployee = new Employee("Jane Doe", "invalid-email", department, "Manager");
+        Employee invalidEmployee = new Employee("John Doe", "john.doe@example.com", department, roles, userEntity);
         String invalidEmployeeJson = objectMapper.writeValueAsString(invalidEmployee);
 
         mockMvc.perform(post("/api/employees")
@@ -118,7 +122,7 @@ public class EmployeeIntegrationTest {
         Department nonExistentDepartment = new Department("Fake Dept", "This department doesn't exist");
         // The department will have id=0 since it's not persisted, which doesn't exist in the database
 
-        Employee employee = new Employee("John Doe", "john.doe@example.com", nonExistentDepartment, "Developer");
+        Employee employee = new Employee("John Doe", "john.doe@example.com", department, roles, userEntity);
         String employeeJson = objectMapper.writeValueAsString(employee);
 
         mockMvc.perform(post("/api/employees")
@@ -138,7 +142,7 @@ public class EmployeeIntegrationTest {
         hrDepartment = departmentInterface.save(hrDepartment);
 
         // Create employee in IT department
-        Employee employee = new Employee("John Doe", "john.doe@example.com", itDepartment, "Developer");
+        Employee employee = new Employee("John Doe", "john.doe@example.com", department, roles, userEntity);
         String employeeJson = objectMapper.writeValueAsString(employee);
 
         String response = mockMvc.perform(post("/api/employees")

@@ -178,4 +178,21 @@ class DepartmentServiceTest {
         assertEquals("No departments found with id of 1", result.getErrors().get(0));
         verify(departmentInterface, never()).deleteById(anyLong());
     }
+
+    @Test
+    void deleteDepartmentById_HasEmployees() {
+        Department department = new Department("IT", "Information Technology");
+        Employee employee = new Employee("John Doe", "john.doe@example.com", department, roles, userEntity);
+
+        when(departmentInterface.findById(1L)).thenReturn(Optional.of(department));
+        when(employeeInterface.findAllByDepartment(department)).thenReturn(List.of(employee));
+
+        Result<Void> result = departmentService.deleteDepartmentById(1L);
+
+        assertFalse(result.isSuccess());
+        assertNull(result.getData());
+        assertEquals("Cannot delete department with existing employees", result.getMessage());
+        assertTrue(result.getErrors().get(0).contains("still has 1 employees"));
+        verify(departmentInterface, never()).deleteById(anyLong());
+    }
 }

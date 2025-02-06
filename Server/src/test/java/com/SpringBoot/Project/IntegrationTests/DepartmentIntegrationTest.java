@@ -2,6 +2,8 @@ package com.SpringBoot.Project.IntegrationTests;
 
 import com.SpringBoot.Project.Models.Department;
 import com.SpringBoot.Project.Models.Employee;
+import com.SpringBoot.Project.Models.Roles;
+import com.SpringBoot.Project.Models.UserEntity;
 import com.SpringBoot.Project.Repositories.DepartmentInterface;
 import com.SpringBoot.Project.Repositories.EmployeeInterface;
 import org.junit.jupiter.api.*;
@@ -32,6 +34,9 @@ public class DepartmentIntegrationTest {
 
     @Autowired
     private EmployeeInterface employeeInterface;
+
+    private Roles roles;
+    private UserEntity userEntity;
 
     @BeforeEach
     void setUp() {
@@ -91,7 +96,7 @@ public class DepartmentIntegrationTest {
         department = departmentInterface.save(department);
 
         // 2. Create employee in department
-        Employee employee = new Employee("John Doe", "john.doe@example.com", department, "Developer");
+        Employee employee = new Employee("John Doe", "john.doe@example.com", department, roles, userEntity);
         employeeInterface.save(employee);
 
         // 3. Update department name and verify the change reflects in employee's department
@@ -118,7 +123,7 @@ public class DepartmentIntegrationTest {
         department = departmentInterface.save(department);
 
         // 2. Create employee in department
-        Employee employee = new Employee("John Doe", "john.doe@example.com", department, "Developer");
+        Employee employee = new Employee("John Doe", "john.doe@example.com", department, roles, userEntity);
         employeeInterface.save(employee);
 
         // 3. Attempt to delete department with existing employees (should fail with constraint violation)

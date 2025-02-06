@@ -39,6 +39,8 @@ class LeaveRequestControllerTest {
 
     private LeaveRequest leaveRequest;
     private Result<LeaveRequest> successResult;
+    private Roles roles;
+    private UserEntity userEntity;
 
     @BeforeEach
     void setUp() {

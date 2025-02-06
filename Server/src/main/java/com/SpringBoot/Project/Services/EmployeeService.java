@@ -15,7 +15,7 @@ public class EmployeeService {
     private final EmployeeInterface employeeInterface;
 
     @Autowired
-    private DepartmentService departmentService;
+    private final DepartmentService departmentService;
 
     @Autowired
     private RoleService roleService;

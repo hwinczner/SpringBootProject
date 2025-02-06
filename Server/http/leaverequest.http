@@ -1,4 +1,4 @@
-@token = eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJNYW5hZ2VyIiwiaWF0IjoxNzM4Nzg5ODc0LCJleHAiOjE3Mzk3ODk4NzR9.ozLF8nUKhlRYEpGrD8jUs7YtihDLSKVrxcgudCzw7tpEPcDlgKjgAQB3UfUNBLZkN_GaOJZ7AZPTTwIEy_lwPw 
+@token = eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJoZW5yeVdpbmN6bmVyIiwiaWF0IjoxNzM4Nzk2MDI2LCJleHAiOjE3Mzk3OTYwMjZ9.hsoH0tTJ6JGL8v3P5mOJ60Pke4bctipPBt86_-BevEx0AaXtSGGip7065KKkT0IH7GiRLvPRENVD5p35H0N53Q 
 
 ### Get all leave requests
 GET http://localhost:8080/api/leaves

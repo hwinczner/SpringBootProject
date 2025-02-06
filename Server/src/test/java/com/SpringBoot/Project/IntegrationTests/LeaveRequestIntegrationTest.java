@@ -256,7 +256,7 @@ public class LeaveRequestIntegrationTest {
         firstEmployeeRequest.setStatus(Status.APPROVED);
         leaveRequestInterface.save(firstEmployeeRequest);
 
-        // Create second employee and their request
+        // Create second employee and their request (should be allowed)
         Employee secondEmployee = createTestEmployee("Jane Smith", "jane.smith@example.com", department);
         secondEmployee = employeeInterface.save(secondEmployee);
 
