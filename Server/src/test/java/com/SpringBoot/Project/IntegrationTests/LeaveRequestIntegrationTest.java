@@ -14,6 +14,8 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,6 +58,9 @@ public class LeaveRequestIntegrationTest {
     @Autowired
     private JwtGenerator jwtGenerator;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     private String authToken;
 
     private Department department;
@@ -70,8 +75,8 @@ public class LeaveRequestIntegrationTest {
         leaveRequestInterface.deleteAll();
         employeeInterface.deleteAll();
         departmentInterface.deleteAll();
+        userInterface.deleteAll();  // This should be before roleInterface due to FK constraints
         roleInterface.deleteAll();
-        userInterface.deleteAll();
 
         // Create test department
         department = departmentInterface.save(new Department("IT", "Information Technology"));
@@ -80,15 +85,17 @@ public class LeaveRequestIntegrationTest {
         employeeRole = roleInterface.save(new Roles("ROLE_EMPLOYEE"));
         managerRole = roleInterface.save(new Roles("ROLE_MANAGER"));
 
-        // Create user entities
+        // Create user entities with proper role lists
         UserEntity employeeUser = new UserEntity();
         employeeUser.setUsername("john.doe");
-        employeeUser.setPassword("password");
+        employeeUser.setPassword(passwordEncoder.encode("password"));
+        employeeUser.setRoles(List.of(employeeRole));
         employeeUser = userInterface.save(employeeUser);
 
         UserEntity managerUser = new UserEntity();
         managerUser.setUsername("jane.manager");
-        managerUser.setPassword("password");
+        managerUser.setPassword(passwordEncoder.encode("password"));
+        managerUser.setRoles(List.of(managerRole));
         managerUser = userInterface.save(managerUser);
 
         // Create test employee
@@ -100,17 +107,12 @@ public class LeaveRequestIntegrationTest {
         managerEmployee = employeeInterface.save(managerEmployee);
 
         // Create and save the test admin user
-        Roles adminRole = new Roles("ROLE_ADMIN");
-        adminRole = roleInterface.save(adminRole);
-
+        Roles adminRole = roleInterface.save(new Roles("ROLE_ADMIN"));
         UserEntity adminUser = new UserEntity();
         adminUser.setUsername("admin");
-        adminUser.setPassword("dummy");
+        adminUser.setPassword(passwordEncoder.encode("password"));
         adminUser.setRoles(List.of(adminRole));
         userInterface.save(adminUser);
-
-        // Generate auth token for admin
-        authToken = generateAuthToken("admin");
     }
 
     private String generateAuthToken(String username) {
@@ -150,9 +152,8 @@ public class LeaveRequestIntegrationTest {
 
     @Test
     @Transactional
+    @WithMockUser(roles = {"EMPLOYEE"})
     void testSubmitLeaveRequest() throws Exception {
-        String employeeAuthToken = generateAuthToken(employee.getUserEntity().getUsername());
-
         LeaveRequest newRequest = createTestLeaveRequest(
                 employee,
                 LocalDate.now().plusDays(5),
@@ -162,8 +163,7 @@ public class LeaveRequestIntegrationTest {
 
         String requestJson = objectMapper.writeValueAsString(newRequest);
 
-        mockMvc.perform(post("/api/leaves")
-                        .header("Authorization", "Bearer " + employeeAuthToken)
+        mockMvc.perform(post("/api/leaves/submit")
                         .param("employeeId", String.valueOf(employee.getEmployeeId()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
@@ -174,6 +174,7 @@ public class LeaveRequestIntegrationTest {
 
     @Test
     @Transactional
+    @WithMockUser(roles = {"EMPLOYEE"})
     void testOverlappingLeaveRequestsForSameEmployee() throws Exception {
         // Create and save first leave request
         LeaveRequest firstRequest = createTestLeaveRequest(
@@ -195,8 +196,7 @@ public class LeaveRequestIntegrationTest {
 
         String requestJson = objectMapper.writeValueAsString(overlappingRequest);
 
-        mockMvc.perform(post("/api/leaves")
-                        .header("Authorization", "Bearer " + authToken)
+        mockMvc.perform(post("/api/leaves/submit")     // Changed to /submit endpoint
                         .param("employeeId", String.valueOf(employee.getEmployeeId()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
@@ -207,6 +207,7 @@ public class LeaveRequestIntegrationTest {
 
     @Test
     @Transactional
+    @WithMockUser(roles = {"EMPLOYEE"})
     void testLeaveRequestValidation() throws Exception {
         // Test with past start date
         LeaveRequest pastRequest = createTestLeaveRequest(
@@ -218,8 +219,7 @@ public class LeaveRequestIntegrationTest {
 
         String pastRequestJson = objectMapper.writeValueAsString(pastRequest);
 
-        mockMvc.perform(post("/api/leaves")
-                        .header("Authorization", "Bearer " + authToken)
+        mockMvc.perform(post("/api/leaves/submit")
                         .param("employeeId", String.valueOf(employee.getEmployeeId()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(pastRequestJson))
@@ -235,8 +235,7 @@ public class LeaveRequestIntegrationTest {
 
         String invalidDateJson = objectMapper.writeValueAsString(invalidDateRequest);
 
-        mockMvc.perform(post("/api/leaves")
-                        .header("Authorization", "Bearer " + authToken)
+        mockMvc.perform(post("/api/leaves/submit")
                         .param("employeeId", String.valueOf(employee.getEmployeeId()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(invalidDateJson))
@@ -245,6 +244,7 @@ public class LeaveRequestIntegrationTest {
 
     @Test
     @Transactional
+    @WithMockUser(roles = {"EMPLOYEE"})
     void testNonOverlappingLeaveRequestsForDifferentEmployees() throws Exception {
         // Create and save first employee's leave request
         LeaveRequest firstEmployeeRequest = createTestLeaveRequest(
@@ -269,8 +269,7 @@ public class LeaveRequestIntegrationTest {
 
         String requestJson = objectMapper.writeValueAsString(secondEmployeeRequest);
 
-        mockMvc.perform(post("/api/leaves")
-                        .header("Authorization", "Bearer " + authToken)
+        mockMvc.perform(post("/api/leaves/submit")
                         .param("employeeId", String.valueOf(secondEmployee.getEmployeeId()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
@@ -278,7 +277,6 @@ public class LeaveRequestIntegrationTest {
                 .andExpect(jsonPath("$.success").value(true));
     }
 
-    // Helper method to create test leave requests
     private LeaveRequest createTestLeaveRequest(Employee employee, LocalDate startDate, LocalDate endDate, String reason) {
         LeaveRequest request = new LeaveRequest();
         request.setEmployee(employee);

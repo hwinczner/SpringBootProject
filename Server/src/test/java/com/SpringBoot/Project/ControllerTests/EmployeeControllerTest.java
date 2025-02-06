@@ -54,7 +54,6 @@ class EmployeeControllerTest {
     private Result<Employee> successResult;
     private Result<Employee> failureResult;
     private Roles roles;
-    private UserEntity userEntity;
 
     @BeforeEach
     void setUp() {
