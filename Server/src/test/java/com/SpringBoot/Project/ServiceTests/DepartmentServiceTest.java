@@ -32,12 +32,53 @@ class DepartmentServiceTest {
     private DepartmentService departmentService;
 
     private Department department;
-    private Roles roles;
+    private Employee employee;
+    private Roles role;
     private UserEntity userEntity;
 
     @BeforeEach
     void setUp() {
         department = new Department("IT", "Information Technology Department");
+
+        role = new Roles("ROLE_EMPLOYEE");
+        try {
+            var roleField = Roles.class.getDeclaredField("id");
+            roleField.setAccessible(true);
+            roleField.set(role, 1);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to set role ID", e);
+        }
+
+        userEntity = new UserEntity();
+        userEntity.setUsername("john.doe");
+        try {
+            var userField = UserEntity.class.getDeclaredField("id");
+            userField.setAccessible(true);
+            userField.set(userEntity, 1);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to set user ID", e);
+        }
+
+        employee = new Employee("John Doe", "john.doe@example.com", department, role, userEntity);
+    }
+
+    // Most test methods remain unchanged as they don't involve Employee...
+
+    @Test
+    void deleteDepartmentById_HasEmployees() {
+        Department department = new Department("IT", "Information Technology");
+        Employee employee = new Employee("John Doe", "john@example.com", department, role, userEntity);
+
+        when(departmentInterface.findById(1L)).thenReturn(Optional.of(department));
+        when(employeeInterface.findAllByDepartment(department)).thenReturn(List.of(employee));
+
+        Result<Void> result = departmentService.deleteDepartmentById(1L);
+
+        assertFalse(result.isSuccess());
+        assertNull(result.getData());
+        assertEquals("Cannot delete department with existing employees", result.getMessage());
+        assertTrue(result.getErrors().get(0).contains("still has 1 employees"));
+        verify(departmentInterface, never()).deleteById(anyLong());
     }
 
     @Test

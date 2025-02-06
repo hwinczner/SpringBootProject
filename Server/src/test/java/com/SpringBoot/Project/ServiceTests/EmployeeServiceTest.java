@@ -1,9 +1,8 @@
 package com.SpringBoot.Project.ServiceTests;
 
 import com.SpringBoot.Project.Models.*;
-import com.SpringBoot.Project.Services.DepartmentService;
+import com.SpringBoot.Project.Services.*;
 import com.SpringBoot.Project.Repositories.EmployeeInterface;
-import com.SpringBoot.Project.Services.EmployeeService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,6 +16,8 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -28,12 +29,18 @@ class EmployeeServiceTest {
     @Mock
     private DepartmentService departmentService;
 
+    @Mock
+    private RoleService roleService;
+
+    @Mock
+    private UserEntityService userEntityService;
+
     @InjectMocks
     private EmployeeService employeeService;
 
     private Employee employee;
     private Department department;
-    private Roles roles;
+    private Roles role;
     private UserEntity userEntity;
 
     @BeforeEach
@@ -46,8 +53,27 @@ class EmployeeServiceTest {
         } catch (Exception e) {
             fail("Failed to set department ID");
         }
+      
+        role = new Roles("ROLE_EMPLOYEE");
+        try {
+            var roleField = Roles.class.getDeclaredField("id");
+            roleField.setAccessible(true);
+            roleField.set(role, 1);
+        } catch (Exception e) {
+            fail("Failed to set role ID");
+        }
 
-        employee = new Employee("John Doe", "john.doe@example.com", department, roles, userEntity);
+        userEntity = new UserEntity();
+        userEntity.setUsername("john.doe");
+        try {
+            var userField = UserEntity.class.getDeclaredField("id");
+            userField.setAccessible(true);
+            userField.set(userEntity, 1);
+        } catch (Exception e) {
+            fail("Failed to set user ID");
+        }
+
+        employee = new Employee("John Doe", "john.doe@example.com", department, role, userEntity);
     }
 
     @Test
@@ -122,6 +148,8 @@ class EmployeeServiceTest {
     @Test
     void saveOrUpdateEmployee_Success() {
         when(departmentService.getDepartmentById(1L)).thenReturn(Result.success(department, "Department found"));
+        when(roleService.getRoleById(1)).thenReturn(Result.success(role, "Role found"));
+        when(userEntityService.getUserByUsername("john.doe")).thenReturn(Result.success(userEntity, "User found"));
         when(employeeInterface.save(any(Employee.class))).thenReturn(employee);
 
         Result<Employee> result = employeeService.saveOrUpdateEmployee(employee);
@@ -129,6 +157,29 @@ class EmployeeServiceTest {
         assertTrue(result.isSuccess());
         assertEquals("Employee saved successfully!", result.getMessage());
         assertEquals(employee, result.getData());
+    }
+
+    @Test
+    void saveOrUpdateEmployee_RoleNotFound() {
+        when(departmentService.getDepartmentById(1L)).thenReturn(Result.success(department, "Department found"));
+        when(roleService.getRoleById(1)).thenReturn(Result.failure("Role not found", List.of("No role found")));
+
+        Result<Employee> result = employeeService.saveOrUpdateEmployee(employee);
+
+        assertFalse(result.isSuccess());
+        assertEquals("Failed to find role", result.getMessage());
+    }
+
+    @Test
+    void saveOrUpdateEmployee_UserNotFound() {
+        when(departmentService.getDepartmentById(1L)).thenReturn(Result.success(department, "Department found"));
+        when(roleService.getRoleById(1)).thenReturn(Result.success(role, "Role found"));
+        when(userEntityService.getUserByUsername("john.doe")).thenReturn(Result.failure("User not found", List.of("No user found")));
+
+        Result<Employee> result = employeeService.saveOrUpdateEmployee(employee);
+
+        assertFalse(result.isSuccess());
+        assertEquals("Failed to find username", result.getMessage());
     }
 
     @Test
@@ -164,6 +215,8 @@ class EmployeeServiceTest {
     @Test
     void saveOrUpdateEmployee_SaveError() {
         when(departmentService.getDepartmentById(1L)).thenReturn(Result.success(department, "Department found"));
+        when(roleService.getRoleById(1)).thenReturn(Result.success(role, "Role found"));
+        when(userEntityService.getUserByUsername("john.doe")).thenReturn(Result.success(userEntity, "User found"));
         when(employeeInterface.save(any(Employee.class))).thenThrow(new RuntimeException("Database error"));
 
         Result<Employee> result = employeeService.saveOrUpdateEmployee(employee);

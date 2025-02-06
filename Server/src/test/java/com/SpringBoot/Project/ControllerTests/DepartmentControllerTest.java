@@ -12,6 +12,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.security.test.context.support.WithMockUser;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
 import java.util.Arrays;
 import java.util.List;
@@ -54,6 +56,7 @@ class DepartmentControllerTest {
     }
 
     @Test
+    @WithMockUser
     void getAllDepartments_Success() throws Exception {
         List<Department> departments = Arrays.asList(department);
         Result<List<Department>> result = Result.success(departments, "Departments fetched successfully");
@@ -68,6 +71,7 @@ class DepartmentControllerTest {
     }
 
     @Test
+    @WithMockUser
     void getDepartmentById_Success() throws Exception {
         when(departmentService.getDepartmentById(1L)).thenReturn(successResult);
 
@@ -78,6 +82,7 @@ class DepartmentControllerTest {
     }
 
     @Test
+    @WithMockUser
     void getDepartmentById_NotFound() throws Exception {
         when(departmentService.getDepartmentById(1L))
                 .thenReturn(Result.failure("Department not found", List.of("No department with ID 1")));
@@ -89,30 +94,36 @@ class DepartmentControllerTest {
     }
 
     @Test
+    @WithMockUser
     void createDepartment_Success() throws Exception {
         when(departmentService.saveOrUpdateDepartment(any(Department.class))).thenReturn(successResult);
 
         mockMvc.perform(post("/api/departments")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(department)))
                 .andExpect(status().isCreated());
     }
 
     @Test
+    @WithMockUser
     void createDepartment_Failure() throws Exception {
         when(departmentService.saveOrUpdateDepartment(any(Department.class))).thenReturn(failureResult);
 
         mockMvc.perform(post("/api/departments")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(department)))
                 .andExpect(status().isInternalServerError());
     }
 
     @Test
+    @WithMockUser
     void updateDepartment_Success() throws Exception {
         when(departmentService.saveOrUpdateDepartment(any(Department.class))).thenReturn(successResult);
 
         mockMvc.perform(put("/api/departments/1")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(department)))
                 .andExpect(status().isOk())
@@ -120,8 +131,10 @@ class DepartmentControllerTest {
     }
 
     @Test
+    @WithMockUser
     void updateDepartment_IdMismatch() throws Exception {
         mockMvc.perform(put("/api/departments/2")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(department)))
                 .andExpect(status().isBadRequest())
@@ -130,10 +143,12 @@ class DepartmentControllerTest {
     }
 
     @Test
+    @WithMockUser
     void updateDepartment_Failure() throws Exception {
         when(departmentService.saveOrUpdateDepartment(any(Department.class))).thenReturn(failureResult);
 
         mockMvc.perform(put("/api/departments/1")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(department)))
                 .andExpect(status().isInternalServerError())
@@ -141,21 +156,25 @@ class DepartmentControllerTest {
     }
 
     @Test
+    @WithMockUser
     void deleteDepartment_Success() throws Exception {
         when(departmentService.deleteDepartmentById(anyLong()))
                 .thenReturn(Result.success(null, "Department deleted successfully"));
 
-        mockMvc.perform(delete("/api/departments/1"))
+        mockMvc.perform(delete("/api/departments/1")
+                        .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
     }
 
     @Test
+    @WithMockUser
     void deleteDepartment_NotFound() throws Exception {
         when(departmentService.deleteDepartmentById(anyLong()))
                 .thenReturn(Result.failure("Department not found", List.of("No department with ID 1")));
 
-        mockMvc.perform(delete("/api/departments/1"))
+        mockMvc.perform(delete("/api/departments/1")
+                        .with(csrf()))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.success").value(false));
     }

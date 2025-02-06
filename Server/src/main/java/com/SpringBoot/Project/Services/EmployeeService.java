@@ -24,9 +24,14 @@ public class EmployeeService {
     private UserEntityService userEntityService;
 
     @Autowired
-    public EmployeeService(EmployeeInterface employeeInterface, DepartmentService departmentService){
+    public EmployeeService(EmployeeInterface employeeInterface,
+                           DepartmentService departmentService,
+                           RoleService roleService,
+                           UserEntityService userEntityService) {
         this.employeeInterface = employeeInterface;
         this.departmentService = departmentService;
+        this.roleService = roleService;
+        this.userEntityService = userEntityService;
     }
 
     public Result<List<Employee>> getAllEmployees(){
@@ -58,7 +63,7 @@ public class EmployeeService {
     public Result<Employee> saveOrUpdateEmployee(Employee employee){
 
         if (employee == null || employee.getDepartment() == null) {
-            return Result.failure("Not a valid Department id", List.of("Employee and department must not be null"));
+            return Result.failure("Invalid input", List.of("Employee and department must not be null"));
         }
 
         long deptId = employee.getDepartment().getDepartmentId();

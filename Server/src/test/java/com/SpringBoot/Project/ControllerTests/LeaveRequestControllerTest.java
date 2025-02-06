@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
@@ -19,10 +20,12 @@ import java.util.List;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(LeaveRequestController.class)
+@WithMockUser
 class LeaveRequestControllerTest {
 
     @Autowired
@@ -41,7 +44,7 @@ class LeaveRequestControllerTest {
 
     @BeforeEach
     void setUp() {
-        //Setup Department
+        // Setup Department
         Department department = new Department("IT", "Information Technology");
         try {
             var deptField = Department.class.getDeclaredField("departmentId");
@@ -51,8 +54,29 @@ class LeaveRequestControllerTest {
             throw new RuntimeException("Failed to set department ID", e);
         }
 
+        // Setup Role
+        Roles role = new Roles("ROLE_EMPLOYEE");
+        try {
+            var roleField = Roles.class.getDeclaredField("id");
+            roleField.setAccessible(true);
+            roleField.set(role, 1);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to set role ID", e);
+        }
+
+        // Setup UserEntity
+        UserEntity userEntity = new UserEntity();
+        userEntity.setUsername("john.doe");
+        try {
+            var userField = UserEntity.class.getDeclaredField("id");
+            userField.setAccessible(true);
+            userField.set(userEntity, 1);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to set user ID", e);
+        }
+
         // Setup Employee
-        Employee employee = new Employee("John Doe", "john.doe@example.com", department, roles, userEntity);
+        Employee employee = new Employee("John Doe", "john.doe@example.com", department, role, userEntity);
         try {
             var empField = Employee.class.getDeclaredField("employeeId");
             empField.setAccessible(true);
@@ -72,7 +96,6 @@ class LeaveRequestControllerTest {
         );
 
         successResult = Result.success(leaveRequest, "Operation successful");
-        Result<LeaveRequest> failureResult = Result.failure("Operation failed", List.of("Error message"));
     }
 
     @Test
@@ -94,7 +117,8 @@ class LeaveRequestControllerTest {
         when(leaveRequestService.submitLeaveRequest(any(LeaveRequest.class), anyLong()))
                 .thenReturn(successResult);
 
-        mockMvc.perform(post("/api/leaves")
+        mockMvc.perform(post("/api/leaves/submit")
+                        .with(csrf())
                         .param("employeeId", "1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(leaveRequest)))
@@ -106,18 +130,19 @@ class LeaveRequestControllerTest {
     @Test
     void submitLeaveRequest_ValidationFailure() throws Exception {
         Result<LeaveRequest> validationFailure = Result.failure(
-                "Invalid date range",  // Changed to match our new error message pattern
+                "Invalid date range",
                 List.of("Start date must be before end date")
         );
 
         when(leaveRequestService.submitLeaveRequest(any(LeaveRequest.class), anyLong()))
                 .thenReturn(validationFailure);
 
-        mockMvc.perform(post("/api/leaves")
+        mockMvc.perform(post("/api/leaves/submit")
+                        .with(csrf())
                         .param("employeeId", "1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(leaveRequest)))
-                .andExpect(status().isBadRequest())  // Changed from isOk() to isBadRequest()
+                .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.errors[0]").value("Start date must be before end date"));
     }
@@ -130,7 +155,8 @@ class LeaveRequestControllerTest {
         when(leaveRequestService.updateLeaveRequest(anyLong(), any(LeaveRequest.class)))
                 .thenReturn(approvedResult);
 
-        mockMvc.perform(put("/api/leaves/1")
+        mockMvc.perform(put("/api/leaves/update/1")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(leaveRequest)))
                 .andExpect(status().isOk())
@@ -148,7 +174,8 @@ class LeaveRequestControllerTest {
         when(leaveRequestService.updateLeaveRequest(anyLong(), any(LeaveRequest.class)))
                 .thenReturn(notFoundResult);
 
-        mockMvc.perform(put("/api/leaves/1")
+        mockMvc.perform(put("/api/leaves/update/1")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(leaveRequest)))
                 .andExpect(status().isOk())
@@ -162,7 +189,8 @@ class LeaveRequestControllerTest {
 
         when(leaveRequestService.deleteLeaveRequest(anyLong())).thenReturn(deleteResult);
 
-        mockMvc.perform(delete("/api/leaves/1"))
+        mockMvc.perform(delete("/api/leaves/1")
+                        .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message").value("Leave request deleted successfully"));
@@ -177,7 +205,8 @@ class LeaveRequestControllerTest {
 
         when(leaveRequestService.deleteLeaveRequest(anyLong())).thenReturn(notFoundResult);
 
-        mockMvc.perform(delete("/api/leaves/1"))
+        mockMvc.perform(delete("/api/leaves/1")
+                        .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.message").value("Leave request not found"));
