@@ -13,12 +13,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/departments")
 public class DepartmentController {
+    private static final Logger logger = LogManager.getLogger(DepartmentController.class);
 
     @Autowired
     private DepartmentService departmentService;
@@ -35,7 +38,10 @@ public class DepartmentController {
     )
     @GetMapping
     public Result<List<Department>> getAllDepartments() {
-        return departmentService.getAllDepartments();
+        logger.info("Fetching all departments");
+        Result<List<Department>> result = departmentService.getAllDepartments();
+        logger.info("Retrieved {} departments", result.getData().size());
+        return result;
     }
 
     // GET department by ID
@@ -56,7 +62,15 @@ public class DepartmentController {
     })
     @GetMapping("/{id}")
     public Result<Department> getDepartmentById(@PathVariable Long id) {
-        return departmentService.getDepartmentById(id);
+        logger.info("Fetching department with ID: {}", id);
+        Result<Department> result = departmentService.getDepartmentById(id);
+
+        if (result.isSuccess()) {
+            logger.info("Successfully retrieved department: {}", result.getData().getName());
+        } else {
+            logger.warn("Failed to find department with ID: {}", id);
+        }
+        return result;
     }
 
     // POST create a new department
@@ -76,10 +90,15 @@ public class DepartmentController {
     })
     @PostMapping
     public ResponseEntity<Result<Department>> createDepartment(@Valid @RequestBody Department department) {
+        logger.info("Creating new department: {}", department.getName());
+
         Result<Department> result = departmentService.saveOrUpdateDepartment(department);
-        if(result.isSuccess()) {
+        if (result.isSuccess()) {
+            logger.info("Successfully created department: {}", department.getName());
             return new ResponseEntity<>(result, HttpStatus.CREATED);
         }
+        logger.error("Failed to create department: {}. Reason: {}",
+                department.getName(), result.getMessage());
         return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
@@ -107,7 +126,11 @@ public class DepartmentController {
             @PathVariable Long id,
             @Valid @RequestBody Department department
     ) {
+        logger.info("Updating department with ID: {}", id);
+
         if (!id.equals(department.getDepartmentId())) {
+            logger.warn("Department ID mismatch. Path ID: {}, Body ID: {}",
+                    id, department.getDepartmentId());
             return ResponseEntity.badRequest().body(
                     Result.failure("Department ID in the path does not match the ID in the request body.",
                             List.of("ID mismatch"))
@@ -116,8 +139,11 @@ public class DepartmentController {
 
         Result<Department> result = departmentService.saveOrUpdateDepartment(department);
         if (result.isSuccess()) {
+            logger.info("Successfully updated department: {}", department.getName());
             return ResponseEntity.ok(result);
         } else {
+            logger.error("Failed to update department: {}. Reason: {}",
+                    department.getName(), result.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result);
         }
     }
@@ -143,17 +169,21 @@ public class DepartmentController {
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<Result<Void>> deleteDepartment(@PathVariable Long id) {
+        logger.info("Processing delete request for department ID: {}", id);
+
         Result<Void> result = departmentService.deleteDepartmentById(id);
 
         if (result.getMessage().contains("Cannot delete department with existing employees")) {
+            logger.warn("Cannot delete department ID: {} - Department has existing employees", id);
             return ResponseEntity.status(HttpStatus.CONFLICT).body(result);
         }
 
         if (result.isSuccess()) {
+            logger.info("Successfully deleted department ID: {}", id);
             return ResponseEntity.ok(result);
         } else {
+            logger.warn("Failed to delete department ID: {}. Reason: {}", id, result.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(result);
         }
     }
-
 }
