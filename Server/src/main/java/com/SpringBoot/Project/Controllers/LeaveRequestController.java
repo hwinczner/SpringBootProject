@@ -14,6 +14,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.List;
 
@@ -21,6 +23,7 @@ import java.util.List;
 @RequestMapping("/api/leaves")
 @Tag(name = "Leave Requests", description = "Endpoints for managing leave requests")
 public class LeaveRequestController {
+    private static final Logger logger = LogManager.getLogger(LeaveRequestController.class);
 
     @Autowired
     private LeaveRequestService leaveRequestService;
@@ -39,7 +42,10 @@ public class LeaveRequestController {
     })
     @GetMapping
     public ResponseEntity<Result<List<LeaveRequest>>> getAllLeaveRequests() {
-        return ResponseEntity.ok(leaveRequestService.getAllLeaveRequests());
+        logger.info("Fetching all leave requests");
+        Result<List<LeaveRequest>> result = leaveRequestService.getAllLeaveRequests();
+        logger.info("Retrieved {} leave requests", result.getData().size());
+        return ResponseEntity.ok(result);
     }
 
     // Submit a new leave request (Employee only)
@@ -74,18 +80,32 @@ public class LeaveRequestController {
             @Parameter(description = "ID of the employee submitting the leave request", required = true)
             @RequestParam Long employeeId
     ) {
+        logger.info("Processing leave request submission for employee ID: {}", employeeId);
+        logger.debug("Leave request details - Start Date: {}, End Date: {}, Reason: {}",
+                leaveRequest.getStartDate(), leaveRequest.getEndDate(), leaveRequest.getReason());
         Result<LeaveRequest> result = leaveRequestService.submitLeaveRequest(leaveRequest, employeeId);
+
+        if (result.isSuccess()) {
+            logger.info("Successfully submitted leave request for employee ID: {}", employeeId);
+        } else {
+            logger.warn("Failed to submit leave request for employee ID: {}. Reason: {}",
+                    employeeId, result.getMessage());
+        }
 
         if (result.isSuccess()) {
             return ResponseEntity.ok(result);
         } else if (result.getMessage().startsWith("Invalid")) {
             // This catches both "Invalid dates" and "Invalid date range"
+            logger.warn("Invalid leave request submitted - {}", result.getMessage());
             return ResponseEntity.badRequest().body(result);
         } else if (result.getMessage().contains("Employee not found")) {
+            logger.warn("Leave request submission failed - Employee not found with ID: {}", employeeId);
             return ResponseEntity.notFound().build();
         } else if (result.getMessage().contains("Overlapping leave request")) {
+            logger.warn("Leave request submission failed - Overlapping request for employee ID: {}", employeeId);
             return ResponseEntity.badRequest().body(result);
         } else {
+            logger.error("Unexpected error processing leave request for employee ID: {}", employeeId);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result);
         }
     }
@@ -109,7 +129,19 @@ public class LeaveRequestController {
             @Parameter(description = "Updated leave request details", required = true)
             @RequestBody LeaveRequest updatedRequest
     ) {
-        return ResponseEntity.ok(leaveRequestService.updateLeaveRequest(id, updatedRequest));
+        logger.info("Processing leave request update for request ID: {}", id);
+        logger.debug("Updated status: {}", updatedRequest.getStatus());
+
+        Result<LeaveRequest> result = leaveRequestService.updateLeaveRequest(id, updatedRequest);
+
+        if (result.isSuccess()) {
+            logger.info("Successfully updated leave request ID: {} to status: {}",
+                    id, updatedRequest.getStatus());
+        } else {
+            logger.warn("Failed to update leave request ID: {}. Reason: {}", id, result.getMessage());
+        }
+
+        return ResponseEntity.ok(result);
     }
 
     // Delete a leave request (Admin only)
@@ -128,6 +160,16 @@ public class LeaveRequestController {
             @Parameter(description = "ID of the leave request to delete", required = true)
             @PathVariable Long id
     ) {
-        return ResponseEntity.ok(leaveRequestService.deleteLeaveRequest(id));
+        logger.info("Processing delete request for leave request ID: {}", id);
+
+        Result<Void> result = leaveRequestService.deleteLeaveRequest(id);
+
+        if (result.isSuccess()) {
+            logger.info("Successfully deleted leave request ID: {}", id);
+        } else {
+            logger.warn("Failed to delete leave request ID: {}. Reason: {}", id, result.getMessage());
+        }
+
+        return ResponseEntity.ok(result);
     }
 }
