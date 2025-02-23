@@ -1,5 +1,6 @@
 package com.SpringBoot.Project.Models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 
@@ -21,6 +22,7 @@ public class Department {
     private String description;
 
     @OneToMany(mappedBy = "department")
+    @JsonIgnore
     private List<Employee> employees = new ArrayList<>();
 
     public Department() {

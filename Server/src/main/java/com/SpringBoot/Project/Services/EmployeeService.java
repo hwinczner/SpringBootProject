@@ -63,7 +63,7 @@ public class EmployeeService {
     public Result<Employee> saveOrUpdateEmployee(Employee employee){
 
         if (employee == null || employee.getDepartment() == null) {
-            return Result.failure("Invalid input", List.of("Employee and department must not be null"));
+            return Result.failure("Not a valid Department id", List.of("Employee and department must not be null"));
         }
 
         long deptId = employee.getDepartment().getDepartmentId();

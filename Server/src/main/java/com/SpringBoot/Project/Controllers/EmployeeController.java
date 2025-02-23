@@ -86,11 +86,9 @@ public class EmployeeController {
                     description = "Invalid employee data or department not found"
             )
     })
+
     @PostMapping
-    public ResponseEntity<?> createEmployee(
-            @Parameter(description = "Employee details to create", required = true)
-            @Valid @RequestBody Employee employee
-    ) {
+    public ResponseEntity<?> createEmployee(@Valid @RequestBody Employee employee) {
         if (employee.getDepartment() == null) {
             return new ResponseEntity<>("Department ID is required", HttpStatus.BAD_REQUEST);
         }

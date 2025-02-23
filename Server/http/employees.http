@@ -1,8 +1,10 @@
 @url = http://localhost:8080/api/employees
 
-@token = eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJBZG1pbiIsImlhdCI6MTczODc4OTY5OSwiZXhwIjoxNzM5Nzg5Njk5fQ.SD9RthTG9pSb01AQGUUvFHODh0C-D4dlJyXzC0GMJwJPsWuoRbgUzeRFOs1dn1OWFULax_uN9JrtD3aAqwBwvQ
+@token = eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJNYW5hZ2VyIiwicm9sZXMiOlsiTUFOQUdFUiJdLCJpYXQiOjE3NDAzNDcyODYsImV4cCI6MTc0MTM0NzI4Nn0.qbEnW9SzZbpviXH6-Uvlvne9yt0O3Lf8EXF7hAUT-CiYbk00rZL8hXG2la-BRJ9MQBdtrcYRoCdvP55GgXP1FA
 ###GET all request
 GET {{url}} HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{token}}
 
 ###POST request
 POST {{url}} HTTP/1.1
