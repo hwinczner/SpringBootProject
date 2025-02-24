@@ -5,6 +5,7 @@ import com.SpringBoot.Project.Models.Employee;
 import com.SpringBoot.Project.Models.Result;
 import com.SpringBoot.Project.Repositories.DepartmentInterface;
 import com.SpringBoot.Project.Repositories.EmployeeInterface;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,11 +22,13 @@ public class DepartmentService {
         this.employeeInterface = employeeInterface;
     }
 
+    @Cacheable(value = "departmentList")
     public Result<List<Department>> getAllDepartments(){
         List<Department> departments = departmentInterface.findAll();
         return Result.success(departments, "Departments fetched successfully.");
     }
 
+    @Cacheable(value = "departments", key = "#id")
     public Result<Department> getDepartmentById(long id){
         Optional<Department> department = departmentInterface.findById(id);
         if(department.isPresent()){
